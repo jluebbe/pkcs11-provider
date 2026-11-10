@@ -132,6 +132,17 @@ foreach t, sources : test_programs
   test_executables += [t]
 endforeach
 
+# This exports its own dlopen() to check how the provider loads the module
+dlopen_flags_test = executable(
+  'tdlopenflags',
+  ['tdlopenflags.c', 'util.c'],
+  build_by_default: false,
+  export_dynamic: true,
+  include_directories: [configinc],
+  dependencies: [libcrypto, libssl, dl_dep],
+)
+test_executables += [dlopen_flags_test]
+
 ec_point_test = executable(
   'tecpoint',
   ['tecpoint.c', '../src/obj/ec_point.c'],
@@ -213,6 +224,7 @@ tests = {
   'op_state': {'suites': all_suites},
   'defaultslot': {'suites': ['kryoptic.multislot']},
   'slotpin': {'suites': ['kryoptic.multislot']},
+  'deepbind': {'suites': all_suites},
 }
 
 test_wrapper = find_program('test-wrapper')

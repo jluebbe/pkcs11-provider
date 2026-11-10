@@ -1,0 +1,16 @@
+#!/bin/bash -e
+# SPDX-License-Identifier: Apache-2.0
+
+source "${TESTSSRCDIR}/helpers.sh"
+
+title PARA "Module is loaded with the default flags"
+$CHECKER "${TESTBLDDIR}/tdlopenflags" default
+
+title PARA "PKCS11_PROVIDER_DEEPBIND=0 disables RTLD_DEEPBIND"
+PKCS11_PROVIDER_DEEPBIND=0 $CHECKER "${TESTBLDDIR}/tdlopenflags" disabled
+
+title PARA "Other values of PKCS11_PROVIDER_DEEPBIND keep the default flags"
+PKCS11_PROVIDER_DEEPBIND=1 $CHECKER "${TESTBLDDIR}/tdlopenflags" default
+PKCS11_PROVIDER_DEEPBIND="" $CHECKER "${TESTBLDDIR}/tdlopenflags" default
+
+exit 0

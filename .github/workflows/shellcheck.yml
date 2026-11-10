@@ -22,6 +22,7 @@ jobs:
             tbasic
             tcerts
             tcms
+            tdeepbind
             tdemoca
             tdigest
             tecc
