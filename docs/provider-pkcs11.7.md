@@ -332,6 +332,33 @@ Examples:
 
 ```PKCS11_PROVIDER_DEBUG=file:/dev/stderr,level:2```
 
+## PKCS11_PROVIDER_DEEPBIND
+
+By default the provider loads the pkcs11 driver with the `RTLD_DEEPBIND`
+flag on platforms that support it. With deep binding the driver prefers
+its own dependencies over symbols that are already present in the
+application, which protects it from conflicting versions of libraries
+(for example libcrypto) loaded by the application.
+
+Setting this variable to `0` loads the driver without `RTLD_DEEPBIND`.
+This is intended for testing and development only, when the application
+must be able to interpose symbols used by the driver. The typical case is
+an application built with AddressSanitizer (or another sanitizer), whose
+runtime terminates the process when a library is loaded with
+`RTLD_DEEPBIND`.
+
+NOTE: without deep binding, a driver that depends on a library which is
+incompatible with the one used by the application may crash or misbehave.
+Do not set this variable in production environments.
+
+Any other value keeps the default behavior. The variable has no effect on
+platforms without `RTLD_DEEPBIND` or when the provider itself is built
+with AddressSanitizer, as deep binding is never used in these cases.
+
+Example:
+
+```PKCS11_PROVIDER_DEEPBIND=0```
+
 PINs can also be provided in PKCS#11 URIs via environment variables using the `env:` schema (e.g., `pin-source=env:VARIABLE_NAME`).
 
 

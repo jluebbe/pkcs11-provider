@@ -311,6 +311,30 @@ CK_RV p11prov_module_new(P11PROV_CTX *ctx, const char *path,
 #define RTLD_DEEPBIND 0
 #endif
 
+/* By default the module is loaded with RTLD_DEEPBIND (where available), so
+ * that it prefers its own dependencies over symbols which are already
+ * present in the application. */
+static int p11prov_dlopen_flags(void)
+{
+    int flags = RTLD_NOW | RTLD_LOCAL;
+
+#ifndef P11PROV_ADDRESS_SANITIZER
+    /* address sanitizer does not play well with the RTLD_DEEPBIND, but we
+     * can only detect it at build time if the provider itself is built with
+     * it. Applications which cannot cope with deep binding for this or
+     * other reasons can disable it via the environment. */
+    const char *env = getenv("PKCS11_PROVIDER_DEEPBIND");
+
+    if (env && strcmp(env, "0") == 0) {
+        P11PROV_debug("PKCS11_PROVIDER_DEEPBIND=0: not using RTLD_DEEPBIND");
+    } else {
+        flags |= RTLD_DEEPBIND;
+    }
+#endif
+
+    return flags;
+}
+
 CK_RV p11prov_module_init(P11PROV_CTX *ctx)
 {
     P11PROV_MODULE *mctx;
@@ -333,7 +357,7 @@ CK_RV p11prov_module_init(P11PROV_CTX *ctx)
 
     dlerror();
 
-    mctx->dlhandle = dlopen(mctx->path, P11PROV_DLOPEN_FLAGS);
+    mctx->dlhandle = dlopen(mctx->path, p11prov_dlopen_flags());
     if (!mctx->dlhandle) {
         char *err = dlerror();
         ret = CKR_GENERAL_ERROR;
